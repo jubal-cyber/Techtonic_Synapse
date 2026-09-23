@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Techtonic Admin</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #111;
+            color: white;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+        }
+
+        h1 {
+            margin-bottom: 5px;
+        }
+
+        .status {
+            margin: 20px 0;
+            padding: 20px;
+            background: #222;
+            border-radius: 12px;
+        }
+
+        button {
+            padding: 14px 25px;
+            margin-right: 10px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        #start {
+            background: white;
+        }
+
+        #next {
+            background: #444;
+            color: white;
+        }
+
+        #clear {
+            background: #b00020;
+            color: white;
+        }
+
+        .timer {
+            font-size: 40px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        table {
+            width: 100%;
+            margin-top: 30px;
+            border-collapse: collapse;
+            background: #222;
+        }
+
+        th,
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #444;
+            text-align: left;
+        }
+
+        #message {
+            margin-top: 15px;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>TECHTONIC ADMIN</h1>
+
+    <p>Synapse Quiz Control Panel</p>
+
+
+    <div class="status">
+
+        <h2 id="question">
+            Question: —
+        </h2>
+
+        <div class="timer">
+
+            <span id="timer">
+                20
+            </span>s
+
+        </div>
+
+
+        <button id="start"
+                onclick="startQuiz()">
+
+            START QUIZ
+
+        </button>
+
+
+        <button id="next"
+                onclick="nextQuestion()">
+
+            NEXT QUESTION
+
+        </button>
+
+
+        <button id="clear"
+                onclick="clearData()">
+
+            CLEAR DATA
+
+        </button>
+
+
+        <p id="message"></p>
+
+    </div>
+
+
+    <h2>Leaderboard</h2>
+
+
+    <table>
+
+        <thead>
+
+            <tr>
+
+                <th>Rank</th>
+
+                <th>Team</th>
+
+                <th>Code</th>
+
+                <th>Score</th>
+
+            </tr>
+
+        </thead>
+
+
+        <tbody id="teams"></tbody>
+
+    </table>
+
+</div>
+
+
+<script>
+
+let timerInterval;
+
+
+async function startQuiz() {
+
+    await fetch(
+        "/admin/start",
+        {
+            method: "POST"
+        }
+    );
+
+    updateState();
+    loadTeams();
+}
+
+
+async function nextQuestion() {
+
+    await fetch(
+        "/admin/next",
+        {
+            method: "POST"
+        }
+    );
+
+    updateState();
+    loadTeams();
+}
+
+
+async function clearData() {
+
+    const confirmed =
+        confirm(
+            "Are you sure you want to delete all quiz data?"
+        );
+
+    if (!confirmed) {
+        return;
+    }
+
+
+    const response =
+        await fetch(
+            "/admin/clear",
+            {
+                method: "POST"
+            }
+        );
+
+
+    const data =
+        await response.json();
+
+
+    if (data.success) {
+
+        document.getElementById(
+            "message"
+        ).textContent =
+            "All quiz data cleared.";
+
+        document.getElementById(
+            "question"
+        ).textContent =
+            "Question: —";
+
+        document.getElementById(
+            "timer"
+        ).textContent = "20";
+
+        loadTeams();
+    }
+}
+
+
+async function updateState() {
+
+    const response =
+        await fetch("/state");
+
+    const data =
+        await response.json();
+
+
+    if (!data.started) {
+
+        document.getElementById(
+            "question"
+        ).textContent =
+            "Question: —";
+
+        return;
+    }
+
+
+    document.getElementById(
+        "question"
+    ).textContent =
+        `Question: ${data.current_question}`;
+
+
+    startTimer();
+}
+
+
+async function startTimer() {
+
+    clearInterval(
+        timerInterval
+    );
+
+
+    timerInterval =
+        setInterval(
+            async () => {
+
+                const response =
+                    await fetch("/state");
+
+                const data =
+                    await response.json();
+
+
+                document.getElementById(
+                    "timer"
+                ).textContent =
+                    data.remaining;
+
+
+                if (
+                    data.remaining <= 0
+                ) {
+
+                    clearInterval(
+                        timerInterval
+                    );
+                }
+
+            },
+            500
+        );
+}
+
+
+async function loadTeams() {
+
+    const response =
+        await fetch("/teams");
+
+    const teams =
+        await response.json();
+
+
+    const table =
+        document.getElementById(
+            "teams"
+        );
+
+
+    table.innerHTML = "";
+
+
+    teams.forEach(
+        (team, index) => {
+
+            const row =
+                document.createElement(
+                    "tr"
+                );
+
+
+            row.innerHTML = `
+                <td>${index + 1}</td>
+                <td>${team.team_name}</td>
+                <td>${team.team_code}</td>
+                <td>${team.score}</td>
+            `;
+
+
+            table.appendChild(row);
+        }
+    );
+}
+
+
+setInterval(
+    () => {
+
+        loadTeams();
+        updateState();
+
+    },
+    2000
+);
+
+
+loadTeams();
+updateState();
+
+</script>
+
+</body>
+
+</html> 

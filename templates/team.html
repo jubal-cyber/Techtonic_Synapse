@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Techtonic Quiz</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- REGISTER -->
+    <div id="register-screen">
+
+        <h1>TECHTONIC</h1>
+        <p>Synapse Quiz Competition</p>
+
+        <input
+    type="text"
+    id="team-name"
+    placeholder="Enter Team Name"
+    autocomplete="off"
+>
+
+<input
+    type="text"
+    id="team-code"
+    placeholder="Enter Team Code"
+    autocomplete="off"
+    maxlength="5"
+>
+
+<button onclick="registerTeam()">
+    Join Quiz
+</button>
+
+<p id="register-message"></p>
+
+    </div>
+
+
+    <!-- WAITING -->
+    <div id="waiting-screen" class="hidden">
+
+        <h1>You're In!</h1>
+
+        <p>
+            Team:
+            <strong id="waiting-team"></strong>
+        </p>
+
+        <div class="waiting-box">
+            Waiting for the quiz to start...
+        </div>
+
+    </div>
+
+
+    <!-- QUIZ -->
+    <div id="quiz-screen" class="hidden">
+
+        <div class="top-bar">
+
+            <span id="team-display"></span>
+
+            <span id="score-display">
+                Score: 0
+            </span>
+
+        </div>
+
+        <div class="question-number">
+            Question <span id="question-id"></span>
+        </div>
+
+        <div class="team-timer">
+            <span id="team-timer">20</span>s
+        </div>
+
+        <h2 id="question-text"></h2>
+
+        <div id="options"></div>
+
+        <p id="answer-message"></p>
+
+    </div>
+
+
+    <!-- ANSWERED / WAITING -->
+    <div id="answered-screen" class="hidden">
+
+        <h1 id="answer-result"></h1>
+
+        <p id="answer-score"></p>
+
+        <div class="waiting-box">
+            Waiting for the next question...
+        </div>
+
+    </div>
+
+
+    <!-- FINISHED -->
+    <div id="finished-screen" class="hidden">
+
+        <h1>Quiz Finished</h1>
+
+        <p>
+            Thank you for participating!
+        </p>
+
+    </div>
+
+</div>
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+
+</body>
+</html>
